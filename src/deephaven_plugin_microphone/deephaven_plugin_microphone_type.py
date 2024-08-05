@@ -3,8 +3,11 @@ from __future__ import annotations
 import io
 from typing import Any
 from deephaven.plugin.object_type import MessageStream, BidirectionalObjectType
+import logging
 
 from .deephaven_plugin_microphone_object import DeephavenPluginMicrophoneObject
+
+logger = logging.getLogger(__name__)
 
 # Create a custom message stream to send messages to the client
 
@@ -22,6 +25,8 @@ class DeephavenPluginMicrophoneMessageStream(MessageStream):
 
         # Start the message stream. All we do is send a blank message to start. Client will respond with the initial state.
         self._client_connection.on_data(b"", [])
+
+        self._obj = obj
 
         obj._set_connection(self)
 
@@ -45,11 +50,21 @@ class DeephavenPluginMicrophoneMessageStream(MessageStream):
         Returns:
             The payload to send to the client and the references to send to the client
         """
-        # This is where you would process the payload.
-        # This is just an acknowledgement that the payload was received,
-        # so print.
-        payload = io.BytesIO(payload).read().decode()
-        print(f"Received payload: {payload}")
+        if len(bytearray(payload)) == 0:
+            logger.debug("Received empty stream payload")
+            return
+        
+        logger.debug(f"Received payload of type: {type(payload)}")
+
+        try:
+            # Send the audio buffer along, it's up to the receiver to handler it
+            self._obj.on_audio(payload)
+            # Empty message to acknowledge audio was received
+            self.send_message('')
+        except Exception as e:
+            logger.error(f"Error processing audio: {e}")
+            # Send the error message to the client
+            self.send_message(str(e))
 
     def on_close(self) -> None:
         """

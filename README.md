@@ -2,8 +2,7 @@
 
 This is a Python plugin for Deephaven generated from a [deephaven-plugin](https://github.com/deephaven/deephaven-plugins) template.
 
-Specifically, this plugin is a bidirectional widget plugin, which can send and receive messages on both the client and server.
-The plugin works out of the box, demonstrates basic plugin structure, and can be used as a starting point for building more complex plugins.
+This plugin takes audio from the microphone and sends it to the server for processing.
 
 ## Plugin Structure
 
@@ -82,16 +81,17 @@ Once the Deephaven server is running, the plugin should be available to use.
 ```python
 from deephaven_plugin_microphone import DeephavenPluginMicrophoneObject
 
-obj = DeephavenPluginMicrophoneObject()
+def handle_audio(data: bytes):
+    print("Data received, outputting to tmp.wav")
+    with open("tmp.wav", "wb") as f:
+        f.write(data)
+
+obj = DeephavenPluginMicrophoneObject(on_audio=handle_audio)
 ```
 
-A panel should appear. You can now use the object to send messages to the client.
+A panel should appear with a microphone button. Press and hold the microphone button, while speaking into the microphone. The audio data will be sent to the server and written to a new file, `tmp.wav`.
 
-```python
-obj.send_message("Hello, world!")
-```
-
-The panel can also send messages back to the Python client by using the input field.
+What you do with the audio in your `on_audio` callback is up to you! You can process the audio immediately instead of writing it to a file.
 
 ## Distributing the Plugin
 
