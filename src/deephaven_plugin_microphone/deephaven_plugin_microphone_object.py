@@ -12,7 +12,7 @@ class DeephavenPluginMicrophoneObject:
     Attributes:
         _connection: MessageStream: The connection to the client
     """
-    def __init__(self, on_audio: Union[Callable[[str], None], None] = None, on_error: Union[Callable[[str], None], None] = None) -> None:
+    def __init__(self, on_audio: Union[Callable[[bytes], None], None] = None, on_error: Union[Callable[[str], None], None] = None) -> None:
         self._connection: MessageStream | None = None
         self.on_audio = on_audio
         self.on_error = on_error
